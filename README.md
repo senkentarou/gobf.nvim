@@ -17,7 +17,12 @@ require('gobf').setup {}
 * For customizing, please setup as below,
 ```
 require('gobf').setup {
-  default_remote = 'upstream'
+  default_remote = 'upstream',
+  default_branches = {
+    'main',
+    'master',
+    'develop'
+  }
 }
 ```
 
