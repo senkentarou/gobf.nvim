@@ -1,7 +1,12 @@
 local vim = vim
 
 local DEFAULT_OPTIONS = {
-  default_remote = 'origin'
+  default_remote = 'origin',
+  default_branches = {
+    'main',
+    'master',
+    'develop'
+  }
 }
 
 local function run(command)
@@ -80,7 +85,9 @@ function gobf.open_git_blob_file(args)
 
   local url_base = remote_base_url(args)
 
-  local blob_target = string.gsub(run('git branch | grep -o -m1 "\\(master\\|main\\)"'), '%s+', '')
+  local branches = table.concat(vim.g.gobf.default_branches, '\\|')
+
+  local blob_target = string.gsub(run('git branch | grep -o -m1 "\\(' .. branches .. '\\)"'), '%s+', '')
   if args and args.on_current_hash then
     blob_target = current_commit_hash()
   end
