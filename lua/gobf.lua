@@ -35,22 +35,6 @@ local function check_git()
   end
 end
 
-local function current_commit_hash()
-  -- detect commit hash on current line
-  local current_file = vim.fn.expand("%")
-  local current_line = vim.fn.line('.')
-  if #current_file <= 0 or current_line <= 0 then
-    error('fatal: could not find file or line.')
-  end
-
-  local blame_hash = string.gsub(run('git blame -L ' .. current_line .. ',' .. current_line .. ' ' .. current_file .. ' | cut -d\' \' -f1'), '[^0-9a-f]', '')
-  if string.find(blame_hash, '^0+$') then
-    error('fatal: current line is not commited yet.')
-  end
-
-  return string.gsub(run('git log --pretty=%H -1 ' .. blame_hash), '%s+', '')
-end
-
 local function remote_base_url(args)
   local target_remote = vim.g.gopr.default_remote
   if args and args.remote ~= nil and #args.remote > 0 then
@@ -89,7 +73,7 @@ function gobf.open_git_blob_file(args)
 
   local blob_target = string.gsub(run('git branch | grep -o -m1 "\\(' .. branches .. '\\)"'), '%s+', '')
   if args and args.on_current_hash then
-    blob_target = current_commit_hash()
+    blob_target = string.gsub(run('git log --pretty=%H -1'), '%s+', '')
   end
 
   local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
