@@ -69,11 +69,18 @@ function gobf.open_git_blob_file(args)
 
   local url_base = remote_base_url(args)
 
-  local branches = table.concat(vim.g.gobf.default_branches, '\\|')
-
-  local blob_target = string.gsub(run('git branch | grep -o -m1 "\\(' .. branches .. '\\)"'), '%s+', '')
+  local blob_target = 'master'
   if args and args.on_current_hash then
     blob_target = string.gsub(run('git log --pretty=%H -1'), '%s+', '')
+  else
+    local branches = string.gsub(run('git branch --format="%(refname:short)"'), '%s+$', '')
+    local target_branches = vim.g.gobf.default_branches
+    for i = 1, #target_branches do
+      if string.find(branches, target_branches[i]) then
+        blob_target = target_branches[i]
+        break
+      end
+    end
   end
 
   local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
