@@ -72,6 +72,8 @@ function gobf.open_git_blob_file(args)
   local blob_target = 'master'
   if args and args.on_current_hash then
     blob_target = string.gsub(run('git log --pretty=%H -1'), '%s+', '')
+  elseif args and args.target_hash then
+    blob_target = args.target_hash
   else
     local branches = string.gsub(run('git branch --format="%(refname:short)"'), '%s+$', '')
     local target_branches = vim.g.gobf.default_branches
