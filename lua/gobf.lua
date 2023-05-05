@@ -5,16 +5,21 @@ local DEFAULT_OPTIONS = {
   default_branches = {
     'main',
     'master',
-    'develop'
-  }
+    'develop',
+  },
 }
 
 local function run(command)
   local handle = io.popen(command)
-  local result = handle:read("*a")
-  handle:close()
 
-  return string.gsub(result, '\n', ' ')
+  if handle then
+    local result = handle:read("*a")
+    handle:close()
+
+    return string.gsub(result, '\n', ' ')
+  end
+
+  return ''
 end
 
 local function exists(path)
@@ -23,36 +28,9 @@ local function exists(path)
   if f ~= nil then
     io.close(f)
     return true
-  else
-    return false
-  end
-end
-
-local function check_git()
-  -- check .git repository
-  if not exists('.git') then
-    error('fatal: .git repository does not exist.')
-  end
-end
-
-local function remote_base_url(args)
-  local target_remote = vim.g.gopr.default_remote
-  if args and args.remote ~= nil and #args.remote > 0 then
-    target_remote = args.remote
   end
 
-  local git_remotes = run('git remote show')
-  if not string.find(git_remotes, target_remote) then
-    target_remote = DEFAULT_OPTIONS.default_remote
-  end
-
-  local git_remote_url = run('git ls-remote --get-url ' .. target_remote)
-  local url_base = string.gsub(git_remote_url, '^.-github.com[:/]?(.*)%.git%s?$', '%1')
-  if git_remote_url == url_base or #url_base <= 0 then
-    error('fatal: could not open remote url about \'' .. git_remote_url .. '\'')
-  end
-
-  return url_base
+  return false
 end
 
 --
@@ -65,10 +43,33 @@ function gobf.setup(options)
 end
 
 function gobf.open_git_blob_file(args)
-  check_git()
+  if not exists('.git') then
+    vim.notify('fatal: .git repository does not exist.', vim.log.levels.ERROR)
+    return
+  end
 
-  local url_base = remote_base_url(args)
+  -- detect remote (origin / upstream / etc...)
+  local target_remote = vim.g.gopr.default_remote
+  if args and args.remote ~= nil and #args.remote > 0 then
+    target_remote = args.remote
+  end
 
+  local git_remotes = run('git remote show')
+  if not string.find(git_remotes, target_remote) then
+    target_remote = DEFAULT_OPTIONS.default_remote
+  end
+
+  -- get remote base url
+  local git_remote_url = run('git ls-remote --get-url ' .. target_remote)
+  local url_base = string.gsub(git_remote_url, '^.-github.com[:/]?(.-)%s?$', '%1') -- only github...
+  local remote_base = string.gsub(url_base, '^(.-)%.git$', '%1') -- clean .git postfix
+
+  if git_remote_url == remote_base or #remote_base <= 0 then
+    vim.notify('fatal: could not open remote url about \'' .. git_remote_url .. '\'', vim.log.levels.ERROR)
+    return
+  end
+
+  -- detect blob branch (master / main / develop / etc...) or hash
   local blob_target = 'master'
   if args and args.on_current_hash then
     blob_target = string.gsub(run('git log --pretty=%H -1'), '%s+', '')
@@ -86,8 +87,7 @@ function gobf.open_git_blob_file(args)
   end
 
   local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
-
-  local target_url = 'https://github.com/' .. url_base .. '/blob/' .. blob_target .. '/' .. relative_path
+  local target_url = 'https://github.com/' .. remote_base .. '/blob/' .. blob_target .. '/' .. relative_path
 
   local _, start_line, _, _ = unpack(vim.fn.getpos("'<"))
   local _, end_line, _, _ = unpack(vim.fn.getpos("'>"))
@@ -96,7 +96,7 @@ function gobf.open_git_blob_file(args)
   end
 
   os.execute('open ' .. target_url)
-  print('opened: ' .. target_url)
+  vim.notify('opened: ' .. target_url)
 end
 
 return gobf
