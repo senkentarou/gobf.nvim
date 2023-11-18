@@ -36,6 +36,29 @@ local function run(command)
   return ''
 end
 
+local function find_branch()
+  local result = vim.g.gobf.default_branch
+  local target_branches = vim.g.gobf.possible_branches
+
+  for i = 1, #target_branches do
+    if string.find(string.gsub(run('git branch --format="%(refname:short)"'), '%s+$', ''), target_branches[i]) then
+      result = target_branches[i]
+      break
+    end
+  end
+
+  return result
+end
+
+local function is_visual_mode()
+  local mode = vim.api.nvim_get_mode().mode
+  if mode == 'v' or mode == 'V' or mode == '' then
+    return true
+  end
+
+  return false
+end
+
 --
 -- Git open blob file
 --
@@ -51,16 +74,17 @@ function gobf.open_git_blob_file(args)
     return
   end
 
+  if vim.fn.empty(vim.fn.expand("%")) == 1 then
+    vim.notify('fatal: current file is empty.', vim.log.levels.ERROR)
+    return
+  end
+
   args = args or {}
 
   -- detect remote (origin / upstream / etc...)
-  local target_remote = vim.g.gopr.default_remote
-  if args.remote ~= nil and #args.remote > 0 then
-    target_remote = args.remote
-  end
+  local target_remote = args.remote or vim.g.gopr.default_remote
 
-  local git_remotes = run('git remote show')
-  if not string.find(git_remotes, target_remote) then
+  if not string.find(run('git remote show'), target_remote) then
     target_remote = DEFAULT_OPTIONS.default_remote
   end
 
@@ -75,30 +99,29 @@ function gobf.open_git_blob_file(args)
   end
 
   -- detect blob branch (master / main / develop / etc...)
-  local blob_target = vim.g.gobf.default_branch
-  local branches = string.gsub(run('git branch --format="%(refname:short)"'), '%s+$', '')
-  local target_branches = vim.g.gobf.possible_branches
-
-  for i = 1, #target_branches do
-    if string.find(branches, target_branches[i]) then
-      blob_target = target_branches[i]
-      break
-    end
-  end
+  local target_blob_branch = find_branch()
 
   if args.on_permalink then
-    blob_target = string.gsub(run('git log --pretty=%H -1 $(git branch -r --format="%(refname:short)" | grep ' .. blob_target .. ' | grep ' .. target_remote .. ')'), '%s+', '')
+    target_blob_branch = string.gsub(run('git log --pretty=%H -1 $(git branch -r --format="%(refname:short)" | grep ' .. target_blob_branch .. ' | grep ' .. target_remote .. ')'),
+                                     '%s+', '')
   end
 
-  local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
-  local target_url = 'https://github.com/' .. remote_base .. '/blob/' .. blob_target .. '/' .. relative_path
+  -- assemble url
+  local relative_file_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
+  local target_url = 'https://github.com/' .. remote_base .. '/blob/' .. target_blob_branch .. '/' .. relative_file_path
 
-  local mode = vim.api.nvim_get_mode().mode
-  if mode == 'v' or mode == 'V' or mode == '' then
+  if is_visual_mode() then
     local start_line = vim.fn.line("v")
     local end_line = vim.fn.line(".")
+
     if start_line > 0 and end_line > 0 then
-      target_url = target_url .. '#L' .. vim.fn.min({start_line, end_line}) .. '-L' .. vim.fn.max({start_line, end_line})
+      target_url = target_url .. '#L' .. vim.fn.min({
+        start_line,
+        end_line,
+      }) .. '-L' .. vim.fn.max({
+        start_line,
+        end_line,
+      })
     end
   end
 
