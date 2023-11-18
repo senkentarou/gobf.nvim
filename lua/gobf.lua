@@ -84,7 +84,7 @@ function gobf.open_git_blob_file(args)
   end
 
   if args and args.on_permalink then
-    blob_target = string.gsub(run('git log --pretty=%H -1 $(git branch -r | grep ' .. blob_target .. ')'), '%s+', '')
+    blob_target = string.gsub(run('git log --pretty=%H -1 $(git branch -r --format="%(refname:short)" | grep ' .. blob_target .. ' | grep ' .. target_remote .. ')'), '%s+', '')
   end
 
   local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
