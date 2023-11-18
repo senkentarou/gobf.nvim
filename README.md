@@ -18,7 +18,7 @@ require('gobf').setup {}
 ```
 require('gobf').setup {
   default_remote = 'upstream',
-  default_branches = {
+  possible_branches = {
     'main',
     'master',
     'develop'

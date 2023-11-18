@@ -2,7 +2,7 @@ local vim = vim
 
 local DEFAULT_OPTIONS = {
   default_remote = 'origin',
-  default_branches = {
+  possible_branches = {
     'main',
     'master',
     'develop',
@@ -74,7 +74,7 @@ function gobf.open_git_blob_file(args)
   -- detect blob branch (master / main / develop / etc...)
   local blob_target = 'master'
   local branches = string.gsub(run('git branch --format="%(refname:short)"'), '%s+$', '')
-  local target_branches = vim.g.gobf.default_branches
+  local target_branches = vim.g.gobf.possible_branches
 
   for i = 1, #target_branches do
     if string.find(branches, target_branches[i]) then
