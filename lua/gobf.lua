@@ -91,10 +91,13 @@ function gobf.open_git_blob_file(args)
   local relative_path = vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
   local target_url = 'https://github.com/' .. remote_base .. '/blob/' .. blob_target .. '/' .. relative_path
 
-  local _, start_line, _, _ = unpack(vim.fn.getpos("'<"))
-  local _, end_line, _, _ = unpack(vim.fn.getpos("'>"))
-  if start_line > 0 and end_line > 0 then
-    target_url = target_url .. '#L' .. start_line .. '-L' .. end_line
+  local mode = vim.api.nvim_get_mode().mode
+  if mode == 'v' or mode == 'V' or mode == '' then
+    local start_line = vim.fn.line("v")
+    local end_line = vim.fn.line(".")
+    if start_line > 0 and end_line > 0 then
+      target_url = target_url .. '#L' .. vim.fn.min({start_line, end_line}) .. '-L' .. vim.fn.max({start_line, end_line})
+    end
   end
 
   open_remote(target_url)
