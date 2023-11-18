@@ -30,7 +30,7 @@ require('gobf').setup {
 ## Usage
 * Please execute `:Gobf` command on target line, then [github](https://github.com/) blob page is opened following commit hash on your web browser.
 * You could set your git remote as an argument like `:Gobf upstream`
-* You could select lines and execute `:Gobf` on visual mode.
+* You could select lines and execute `<CMD>Gobf` on visual mode.
 
 ## Example keymappings
 ```
