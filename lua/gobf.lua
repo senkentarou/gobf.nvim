@@ -45,7 +45,7 @@ function gobf.setup(options)
 end
 
 function gobf.open_git_blob_file(args)
-  if vim.fn.isdirectory('.git') == 0 then
+  if vim.fn.empty(vim.fn.glob('.git')) == 1 then
     vim.notify('fatal: .git does not exist on current directory.', vim.log.levels.ERROR)
     return
   end
