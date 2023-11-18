@@ -35,17 +35,6 @@ local function run(command)
   return ''
 end
 
-local function exists(path)
-  local f = io.open(path, "r")
-
-  if f ~= nil then
-    io.close(f)
-    return true
-  end
-
-  return false
-end
-
 --
 -- Git open blob file
 --
@@ -56,8 +45,8 @@ function gobf.setup(options)
 end
 
 function gobf.open_git_blob_file(args)
-  if not exists('.git') then
-    vim.notify('fatal: .git repository does not exist.', vim.log.levels.ERROR)
+  if vim.fn.isdirectory('.git') == 0 then
+    vim.notify('fatal: .git does not exist on current directory.', vim.log.levels.ERROR)
     return
   end
 
