@@ -51,9 +51,11 @@ function gobf.open_git_blob_file(args)
     return
   end
 
+  args = args or {}
+
   -- detect remote (origin / upstream / etc...)
   local target_remote = vim.g.gopr.default_remote
-  if args and args.remote ~= nil and #args.remote > 0 then
+  if args.remote ~= nil and #args.remote > 0 then
     target_remote = args.remote
   end
 
@@ -84,7 +86,7 @@ function gobf.open_git_blob_file(args)
     end
   end
 
-  if args and args.on_permalink then
+  if args.on_permalink then
     blob_target = string.gsub(run('git log --pretty=%H -1 $(git branch -r --format="%(refname:short)" | grep ' .. blob_target .. ' | grep ' .. target_remote .. ')'), '%s+', '')
   end
 
