@@ -9,6 +9,19 @@ local DEFAULT_OPTIONS = {
   },
 }
 
+local function open_remote(url)
+  if vim.fn.executable('open') then
+    -- open remote directly.
+    os.execute('open ' .. url)
+    vim.notify('opened: ' .. url)
+  else
+    -- copy url if it cannot open.
+    vim.fn.setreg("+", url)
+    vim.fn.setreg("*", url)
+    vim.notify('copied: ' .. url)
+  end
+end
+
 local function run(command)
   local handle = io.popen(command)
 
@@ -95,8 +108,7 @@ function gobf.open_git_blob_file(args)
     target_url = target_url .. '#L' .. start_line .. '-L' .. end_line
   end
 
-  os.execute('open ' .. target_url)
-  vim.notify('opened: ' .. target_url)
+  open_remote(target_url)
 end
 
 return gobf
