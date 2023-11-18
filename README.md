@@ -37,10 +37,10 @@ require('gobf').setup {
 nnoremap <silent> <Leader>o :<C-u>Gobf<CR>
 " open blob file with visual selected lines on github.com
 vnoremap <silent> <Leader>o :Gobf<CR>
-" open blob file as current hash revision on github.com
-nnoremap <silent> <Leader>O :<C-u>lua require('gobf').open_git_blob_file({ on_current_hash = true })<CR>
-" open blob file as current hash revision with visual selected lines on github.com
-vnoremap <silent> <Leader>O :lua require('gobf').open_git_blob_file({ on_current_hash = true })<CR>
+" open blob file as current remote revision on github.com
+nnoremap <silent> <Leader>O :<C-u>lua require('gobf').open_git_blob_file({ on_permalink = true })<CR>
+" open blob file as current remote revision with visual selected lines on github.com
+vnoremap <silent> <Leader>O :lua require('gobf').open_git_blob_file({ on_permalink = true })<CR>
 ```
 
 ## For development

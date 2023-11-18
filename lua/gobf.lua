@@ -83,7 +83,7 @@ function gobf.open_git_blob_file(args)
     end
   end
 
-  if args and args.on_current_hash then
+  if args and args.on_permalink then
     blob_target = string.gsub(run('git log --pretty=%H -1 $(git branch -r | grep ' .. blob_target .. ')'), '%s+', '')
   end
 
