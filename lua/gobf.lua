@@ -82,7 +82,7 @@ function gobf.open_git_blob_file(args)
   args = args or {}
 
   -- detect remote (origin / upstream / etc...)
-  local target_remote = args.remote or vim.g.gopr.default_remote
+  local target_remote = args.remote or vim.g.gobf.default_remote
 
   if not string.find(run('git remote show'), target_remote) then
     target_remote = DEFAULT_OPTIONS.default_remote
